@@ -44,23 +44,23 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  	pr_debug("%s: Interface created\n", dev->name);
  	return ret;
  
-@@ -475,4 +480,79 @@
+@@ -475,4 +480,92 @@
  	unregister_random_vmfork_notifier(&vm_notifier);
  	unregister_pm_notifier(&pm_notifier);
  	rcu_barrier();
 +}
 +
-+void wg_device_handle_post_config(struct net_device *dev, struct amnezia_config *asc)
++int wg_device_handle_post_config(struct net_device *dev, struct amnezia_config *asc)
 +{
 +	struct wg_device *wg = netdev_priv(dev);
 +	bool a_sec_on = false;
++	int ret = 0;
 +
 +	if (!asc->advanced_security_enabled)
-+		return;
++		goto out;
 +
-+	if (asc->junk_packet_count < 0) {
-+		// TODO error
-+	}
++	if (asc->junk_packet_count < 0)
++		ret = -1;
 +
 +	wg->advanced_security_config.junk_packet_count = asc->junk_packet_count;
 +	if (asc->junk_packet_count != 0)
@@ -77,9 +77,9 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
 +		wg->advanced_security_config.junk_packet_min_size = 0;
 +		wg->advanced_security_config.junk_packet_max_size = 1;
 +
-+		// TODO error
++		ret = -1;
 +	} else if (asc->junk_packet_max_size < asc->junk_packet_min_size) {
-+		// TODO error
++		ret = -1;
 +	} else
 +		wg->advanced_security_config.junk_packet_max_size = asc->junk_packet_max_size;
 +
@@ -87,7 +87,7 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
 +		a_sec_on = true;
 +
 +	if (asc->init_packet_junk_size + MESSAGE_INITIATION_SIZE >= MESSAGE_MAX_SIZE) {
-+		// TODO error
++		ret = -1;
 +	} else
 +		wg->advanced_security_config.init_packet_junk_size = asc->init_packet_junk_size;
 +
@@ -95,7 +95,7 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
 +		a_sec_on = true;
 +
 +	if (asc->response_packet_junk_size + MESSAGE_RESPONSE_SIZE >= MESSAGE_MAX_SIZE) {
-+		// TODO error
++		ret = -1;
 +	} else
 +		wg->advanced_security_config.response_packet_junk_size = asc->response_packet_junk_size;
 +
@@ -122,7 +122,20 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
 +		wg->advanced_security_config.transport_packet_magic_header = asc->transport_packet_magic_header;
 +	}
 +
++	if (asc->init_packet_magic_header == asc->response_packet_magic_header ||
++			asc->init_packet_magic_header == asc->cookie_packet_magic_header ||
++			asc->init_packet_magic_header == asc->transport_packet_magic_header ||
++			asc->response_packet_magic_header == asc->cookie_packet_magic_header ||
++			asc->response_packet_magic_header == asc->transport_packet_magic_header ||
++			asc->cookie_packet_magic_header == asc->transport_packet_magic_header)
++		ret = -1;
++
++	if (MESSAGE_INITIATION_SIZE + asc->init_packet_junk_size == MESSAGE_RESPONSE_SIZE + asc->response_packet_junk_size)
++		ret = -1;
++
++out:
 +	wg->advanced_security_config.advanced_security_enabled = a_sec_on;
++	return ret;
  }
 diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kconfig -x Makefile -x dkms.conf ../../linux-source-6.2.0/drivers/net/wireguard/device.h ./device.h
 --- ../../linux-source-6.2.0/drivers/net/wireguard/device.h	2023-11-10 18:10:29
@@ -159,7 +172,7 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  
  int wg_device_init(void);
  void wg_device_uninit(void);
-+void wg_device_handle_post_config(struct net_device *dev, struct amnezia_config *asc);
++int wg_device_handle_post_config(struct net_device *dev, struct amnezia_config *asc);
  
  #endif /* _WG_DEVICE_H */
 diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kconfig -x Makefile -x dkms.conf ../../linux-source-6.2.0/drivers/net/wireguard/main.c ./main.c
@@ -334,11 +347,13 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  	if (flags & WGDEVICE_F_REPLACE_PEERS)
  		wg_peer_remove_all(wg);
  
-@@ -597,10 +670,12 @@
+@@ -597,10 +670,14 @@
  	ret = 0;
  
  out:
-+	wg_device_handle_post_config(wg->dev, asc);
++	if (!ret)
++		ret = wg_device_handle_post_config(wg->dev, asc);
++
  	mutex_unlock(&wg->device_update_lock);
  	rtnl_unlock();
  	dev_put(wg->dev);
