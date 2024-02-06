@@ -159,8 +159,8 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
 +		ret = -1;
 +	}
 +
-+out:
 +	wg->advanced_security_config.advanced_security_enabled = a_sec_on;
++out:
 +	return ret;
  }
 diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kconfig -x Makefile -x dkms.conf ../../linux-source-6.2.0/drivers/net/wireguard/device.h ./device.h
