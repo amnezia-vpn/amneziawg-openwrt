@@ -6,8 +6,11 @@
 
 include $(TOPDIR)/rules.mk
 
-LUCI_TITLE:=Support for AmneziaWG VPN
-LUCI_DEPENDS:=+amnezia-wg-tools +ucode
+PKG_MAINTAINER:=Amnezia Admin <admin@amnezia.org>
+PKG_VERSION:=0.0.1-1
+LUCI_TITLE:=AmneziaWG Web UI
+LUCI_DESCRIPTION:=Provides Web UI for AmneziaWG
+LUCI_DEPENDS:=+luci-base +amneziawg-tools +ucode
 LUCI_PKGARCH:=all
 
 PKG_PROVIDES:=luci-app-amneziawg

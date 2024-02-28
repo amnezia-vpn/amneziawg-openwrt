@@ -3,15 +3,18 @@ include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=kmod-amneziawg
+PKG_VERSION:=0.0.1
 PKG_RELEASE:=1
 
 include $(INCLUDE_DIR)/package.mk
 
 define KernelPackage/amneziawg
 	SECTION:=kernel
-	CATEGORY:=Kernel modules
+	CATEGORY:=Kernel Modules
 	SUBMENU:=Network Support
-	TITLE:=AmneziaWG VPN Kernel Module
+  URL:=https://amnezia.org/
+  MAINTAINER:=Amnezia Admin <admin@amnezia.org>
+	TITLE:=AmneziaWG Kernel Module
 	FILES:=$(PKG_BUILD_DIR)/amneziawg.ko
 	DEPENDS:= \
 		+kmod-udptunnel4 \
