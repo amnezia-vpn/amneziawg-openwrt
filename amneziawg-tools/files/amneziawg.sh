@@ -2,6 +2,8 @@
 # Copyright 2016-2017 Dan Luedtke <mail@danrl.com>
 # Licensed to the public under the Apache License 2.0.
 
+# shellcheck disable=SC1091,SC3003,SC3043
+
 WG=/usr/bin/amneziawg
 if [ ! -x $WG ]; then
 	logger -t "amnezia-wg" "error: missing amnezia-wg-tools (${WG})"
@@ -28,21 +30,23 @@ proto_amneziawg_init_config() {
 	proto_config_add_int "awg_h2"
 	proto_config_add_int "awg_h3"
 	proto_config_add_int "awg_h4"
+# shellcheck disable=SC2034
 	available=1
+# shellcheck disable=SC2034
 	no_proto_task=1
 }
 
 proto_amneziawg_is_kernel_mode() {
 	if [ ! -e /sys/module/amneziawg ]; then
-		modprobe amneziawg > /dev/null 2&>1 || true
+		modprobe amneziawg >/dev/null 2>&1 || true
 
 		if [ -e /sys/module/amneziawg ]; then
 			return 0
 		else
-			if [ ! command -v "${WG_QUICK_USERSPACE_IMPLEMENTATION:-amneziawg-go}" >/dev/null ]; then
+			if ! command -v "${WG_QUICK_USERSPACE_IMPLEMENTATION:-amneziawg-go}" >/dev/null; then
 				ret=$?
 				echo "Please install either kernel module (kmod-amneziawg package) or user-space implementation in /usr/bin/amneziawg-go."
-				exit $?
+				exit $ret
 			else
 				return 1
 			fi
@@ -111,7 +115,7 @@ proto_amneziawg_setup_peer() {
 		echo "PersistentKeepalive=${persistent_keepalive}" >> "${wg_cfg}"
 	fi
 
-	if [ ${route_allowed_ips} -ne 0 ]; then
+	if [ "${route_allowed_ips}" -ne 0 ]; then
 		for allowed_ip in ${allowed_ips}; do
 			case "${allowed_ip}" in
 				*:*/*)
@@ -135,7 +139,7 @@ ensure_key_is_generated() {
 	local private_key
 	private_key="$(uci get network."$1".private_key)"
 
-	if [ "$private_key" == "generate" ]; then
+	if [ "$private_key" = "generate" ]; then
 		local ucitmp
 		oldmask="$(umask)"
 		umask 077
@@ -155,7 +159,12 @@ proto_amneziawg_setup() {
 
 	local private_key
 	local listen_port
+	local addresses
 	local mtu
+	local fwmark
+	local ip6prefix
+	local nohostroute
+	local tunlink
 
 	# Amnezia WG specific parameters
 	local awg_jc
@@ -248,7 +257,7 @@ proto_amneziawg_setup() {
 	config_foreach proto_amneziawg_setup_peer "amneziawg_${config}"
 
 	# apply configuration file
-	${WG} setconf ${config} "${wg_cfg}"
+	${WG} setconf "${config}" "${wg_cfg}"
 	WG_RETURN=$?
 
 	rm -f "${wg_cfg}"
@@ -282,6 +291,7 @@ proto_amneziawg_setup() {
 
 	# endpoint dependency
 	if [ "${nohostroute}" != "1" ]; then
+# shellcheck disable=SC2034
 		${WG} show "${config}" endpoints | \
 		sed -E 's/\[?([0-9.:a-f]+)\]?:([0-9]+)/\1 \2/' | \
 		while IFS=$'\t ' read -r key address port; do
@@ -299,7 +309,7 @@ proto_amneziawg_teardown() {
 	if proto_amneziawg_is_kernel_mode; then
 		ip link del dev "${config}" >/dev/null 2>&1
 	else
-		rm -f /var/run/wireguard/${config}.sock
+		rm -f "/var/run/wireguard/${config}.sock"
 	fi
 }
 
