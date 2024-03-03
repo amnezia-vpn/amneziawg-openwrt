@@ -26,7 +26,7 @@ const methods = {
 	generateKeyPair: {
 		call: function() {
 			const priv = command('amneziawg genkey 2>/dev/null');
-			const pub = command(`echo ${shellquote(priv)} | wg pubkey 2>/dev/null`);
+			const pub = command(`echo ${shellquote(priv)} | amneziawg pubkey 2>/dev/null`);
 
 			return { keys: { priv, pub } };
 		}
@@ -36,7 +36,7 @@ const methods = {
 		args: { privkey: "privkey" },
 		call: function(req) {
 			const priv = req.args?.privkey;
-			const pub = command(`echo ${shellquote(priv)} | wg pubkey 2>/dev/null`);
+			const pub = command(`echo ${shellquote(priv)} | amneziawg pubkey 2>/dev/null`);
 
 			return { keys: { priv, pub } };
 		}
