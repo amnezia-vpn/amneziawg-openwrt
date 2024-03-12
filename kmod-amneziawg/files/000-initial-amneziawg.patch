@@ -1,7 +1,8 @@
-diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kconfig -x Makefile -x dkms.conf ../../linux-source-6.2.0/drivers/net/wireguard/cookie.c ./cookie.c
---- ../../linux-source-6.2.0/drivers/net/wireguard/cookie.c	2023-11-10 18:10:29
-+++ ./cookie.c	2023-11-23 18:59:07
-@@ -179,13 +179,13 @@
+diff --git cookie.c cookie.c
+index 8b7d1fe..3120094 100644
+--- cookie.c
++++ cookie.c
+@@ -179,13 +179,13 @@ void wg_cookie_add_mac_to_packet(void *message, size_t len,
  
  void wg_cookie_message_create(struct message_handshake_cookie *dst,
  			      struct sk_buff *skb, __le32 index,
@@ -17,10 +18,11 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  	dst->receiver_index = index;
  	get_random_bytes_wait(dst->nonce, COOKIE_NONCE_LEN);
  
-diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kconfig -x Makefile -x dkms.conf ../../linux-source-6.2.0/drivers/net/wireguard/cookie.h ./cookie.h
---- ../../linux-source-6.2.0/drivers/net/wireguard/cookie.h	2023-11-10 18:10:29
-+++ ./cookie.h	2023-11-23 13:11:40
-@@ -52,7 +52,7 @@
+diff --git cookie.h cookie.h
+index c4bd61c..2b50660 100644
+--- cookie.h
++++ cookie.h
+@@ -52,7 +52,7 @@ void wg_cookie_add_mac_to_packet(void *message, size_t len,
  
  void wg_cookie_message_create(struct message_handshake_cookie *src,
  			      struct sk_buff *skb, __le32 index,
@@ -29,10 +31,11 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  void wg_cookie_message_consume(struct message_handshake_cookie *src,
  			       struct wg_device *wg);
  
-diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kconfig -x Makefile -x dkms.conf ../../linux-source-6.2.0/drivers/net/wireguard/device.c ./device.c
---- ../../linux-source-6.2.0/drivers/net/wireguard/device.c	2023-11-10 18:10:29
-+++ ./device.c	2023-11-26 17:42:17
-@@ -379,6 +379,11 @@
+diff --git device.c device.c
+index 062490f..40c4f1c 100644
+--- device.c
++++ device.c
+@@ -377,6 +377,11 @@ static int wg_newlink(struct net *src_net, struct net_device *dev,
  	 */
  	dev->priv_destructor = wg_destruct;
  
@@ -44,11 +47,10 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  	pr_debug("%s: Interface created\n", dev->name);
  	return ret;
  
-@@ -475,4 +480,118 @@
- 	unregister_random_vmfork_notifier(&vm_notifier);
- 	unregister_pm_notifier(&pm_notifier);
+@@ -473,3 +478,118 @@ void wg_device_uninit(void)
+ #endif
  	rcu_barrier();
-+}
+ }
 +
 +int wg_device_handle_post_config(struct net_device *dev, struct amnezia_config *asc)
 +{
@@ -136,22 +138,23 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
 +		wg->advanced_security_config.transport_packet_magic_header = asc->transport_packet_magic_header;
 +	}
 +
-+	if (asc->init_packet_magic_header == asc->response_packet_magic_header ||
-+			asc->init_packet_magic_header == asc->cookie_packet_magic_header ||
-+			asc->init_packet_magic_header == asc->transport_packet_magic_header ||
-+			asc->response_packet_magic_header == asc->cookie_packet_magic_header ||
-+			asc->response_packet_magic_header == asc->transport_packet_magic_header ||
-+			asc->cookie_packet_magic_header == asc->transport_packet_magic_header) {
++	if (wg->advanced_security_config.init_packet_magic_header == wg->advanced_security_config.response_packet_magic_header ||
++			wg->advanced_security_config.init_packet_magic_header == wg->advanced_security_config.cookie_packet_magic_header ||
++			wg->advanced_security_config.init_packet_magic_header == wg->advanced_security_config.transport_packet_magic_header ||
++			wg->advanced_security_config.response_packet_magic_header == wg->advanced_security_config.cookie_packet_magic_header ||
++			wg->advanced_security_config.response_packet_magic_header == wg->advanced_security_config.transport_packet_magic_header ||
++			wg->advanced_security_config.cookie_packet_magic_header == wg->advanced_security_config.transport_packet_magic_header) {
 +		net_dbg_ratelimited("%s: magic headers should differ; got: init:%d; recv:%d; unde:%d; tran:%d\n",
 +		                    dev->name,
-+							asc->init_packet_magic_header,
-+		                    asc->response_packet_magic_header,
-+							asc->cookie_packet_magic_header,
-+							asc->transport_packet_magic_header);
++							wg->advanced_security_config.init_packet_magic_header,
++		                    wg->advanced_security_config.response_packet_magic_header,
++							wg->advanced_security_config.cookie_packet_magic_header,
++							wg->advanced_security_config.transport_packet_magic_header);
 +		ret = -EINVAL;
 +	}
 +
-+	if (MESSAGE_INITIATION_SIZE + asc->init_packet_junk_size == MESSAGE_RESPONSE_SIZE + asc->response_packet_junk_size) {
++	if (MESSAGE_INITIATION_SIZE + wg->advanced_security_config.init_packet_junk_size ==
++		MESSAGE_RESPONSE_SIZE + wg->advanced_security_config.response_packet_junk_size) {
 +		net_dbg_ratelimited("%s: new init size:%d; and new response size:%d; should differ\n",
 +		                    dev->name,
 +		                    MESSAGE_INITIATION_SIZE + asc->init_packet_junk_size,
@@ -162,11 +165,12 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
 +	wg->advanced_security_config.advanced_security_enabled = a_sec_on;
 +out:
 +	return ret;
- }
-diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kconfig -x Makefile -x dkms.conf ../../linux-source-6.2.0/drivers/net/wireguard/device.h ./device.h
---- ../../linux-source-6.2.0/drivers/net/wireguard/device.h	2023-11-10 18:10:29
-+++ ./device.h	2023-11-23 18:48:52
-@@ -37,6 +37,19 @@
++}
+diff --git device.h device.h
+index 43c7ceb..89e946c 100644
+--- device.h
++++ device.h
+@@ -37,6 +37,19 @@ struct prev_queue {
  	atomic_t count;
  };
  
@@ -186,7 +190,7 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  struct wg_device {
  	struct net_device *dev;
  	struct crypt_queue encrypt_queue, decrypt_queue, handshake_queue;
-@@ -50,6 +63,7 @@
+@@ -50,6 +63,7 @@ struct wg_device {
  	struct allowedips peer_allowedips;
  	struct mutex device_update_lock, socket_update_lock;
  	struct list_head device_list, peer_list;
@@ -194,33 +198,29 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  	atomic_t handshake_queue_len;
  	unsigned int num_peers, device_update_gen;
  	u32 fwmark;
-@@ -58,5 +72,6 @@
+@@ -58,5 +72,6 @@ struct wg_device {
  
  int wg_device_init(void);
  void wg_device_uninit(void);
 +int wg_device_handle_post_config(struct net_device *dev, struct amnezia_config *asc);
  
  #endif /* _WG_DEVICE_H */
-diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kconfig -x Makefile -x dkms.conf ../../linux-source-6.2.0/drivers/net/wireguard/main.c ./main.c
---- ../../linux-source-6.2.0/drivers/net/wireguard/main.c	2023-11-10 18:10:29
-+++ ./main.c	2023-11-22 16:37:56
-@@ -3,14 +3,13 @@
-  * Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
-  */
- 
--#include "version.h"
- #include "device.h"
- #include "noise.h"
+diff --git main.c main.c
+index 5506738..b45253d 100644
+--- main.c
++++ main.c
+@@ -9,9 +9,7 @@
  #include "queueing.h"
  #include "ratelimiter.h"
  #include "netlink.h"
- 
+-
 -#include <uapi/linux/wireguard.h>
+-
 +#include "uapi/wireguard.h"
+ #include "crypto/zinc.h"
  
  #include <linux/init.h>
- #include <linux/module.h>
-@@ -45,7 +44,7 @@
+@@ -52,7 +50,7 @@ static int __init wg_mod_init(void)
  	if (ret < 0)
  		goto err_netlink;
  
@@ -229,7 +229,7 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  	pr_info("Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.\n");
  
  	return 0;
-@@ -71,7 +70,7 @@
+@@ -78,7 +76,7 @@ static void __exit wg_mod_exit(void)
  module_init(wg_mod_init);
  module_exit(wg_mod_exit);
  MODULE_LICENSE("GPL v2");
@@ -238,10 +238,11 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  MODULE_AUTHOR("Jason A. Donenfeld <Jason@zx2c4.com>");
  MODULE_VERSION(WIREGUARD_VERSION);
  MODULE_ALIAS_RTNL_LINK(KBUILD_MODNAME);
-diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kconfig -x Makefile -x dkms.conf ../../linux-source-6.2.0/drivers/net/wireguard/messages.h ./messages.h
---- ../../linux-source-6.2.0/drivers/net/wireguard/messages.h	2023-11-10 18:10:29
-+++ ./messages.h	2023-11-22 19:16:03
-@@ -117,6 +117,14 @@
+diff --git messages.h messages.h
+index 1d1ed18..42cd054 100644
+--- messages.h
++++ messages.h
+@@ -117,6 +117,14 @@ enum message_alignments {
  	MESSAGE_MINIMUM_LENGTH = message_data_len(0)
  };
  
@@ -256,19 +257,22 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  #define SKB_HEADER_LEN                                       \
  	(max(sizeof(struct iphdr), sizeof(struct ipv6hdr)) + \
  	 sizeof(struct udphdr) + NET_SKB_PAD)
-diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kconfig -x Makefile -x dkms.conf ../../linux-source-6.2.0/drivers/net/wireguard/netlink.c ./netlink.c
---- ../../linux-source-6.2.0/drivers/net/wireguard/netlink.c	2023-11-10 18:10:29
-+++ ./netlink.c	2023-11-26 17:34:30
-@@ -10,7 +10,7 @@
+diff --git netlink.c netlink.c
+index e3420e0..1d03aef 100644
+--- netlink.c
++++ netlink.c
+@@ -9,9 +9,7 @@
+ #include "socket.h"
  #include "queueing.h"
  #include "messages.h"
- 
+-
 -#include <uapi/linux/wireguard.h>
+-
 +#include "uapi/wireguard.h"
- 
  #include <linux/if.h>
  #include <net/genetlink.h>
-@@ -27,7 +27,16 @@
+ #include <net/sock.h>
+@@ -27,7 +25,16 @@ static const struct nla_policy device_policy[WGDEVICE_A_MAX + 1] = {
  	[WGDEVICE_A_FLAGS]		= { .type = NLA_U32 },
  	[WGDEVICE_A_LISTEN_PORT]	= { .type = NLA_U16 },
  	[WGDEVICE_A_FWMARK]		= { .type = NLA_U32 },
@@ -286,7 +290,7 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  };
  
  static const struct nla_policy peer_policy[WGPEER_A_MAX + 1] = {
-@@ -233,7 +242,25 @@
+@@ -233,7 +240,25 @@ static int wg_get_device_dump(struct sk_buff *skb, struct netlink_callback *cb)
  				wg->incoming_port) ||
  		    nla_put_u32(skb, WGDEVICE_A_FWMARK, wg->fwmark) ||
  		    nla_put_u32(skb, WGDEVICE_A_IFINDEX, wg->dev->ifindex) ||
@@ -313,7 +317,7 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  			goto out;
  
  		down_read(&wg->static_identity.lock);
-@@ -493,6 +520,7 @@
+@@ -494,6 +519,7 @@ out:
  static int wg_set_device(struct sk_buff *skb, struct genl_info *info)
  {
  	struct wg_device *wg = lookup_interface(info->attrs, skb);
@@ -321,7 +325,7 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  	u32 flags = 0;
  	int ret;
  
-@@ -537,6 +565,51 @@
+@@ -538,6 +564,51 @@ static int wg_set_device(struct sk_buff *skb, struct genl_info *info)
  			goto out;
  	}
  
@@ -373,13 +377,14 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  	if (flags & WGDEVICE_F_REPLACE_PEERS)
  		wg_peer_remove_all(wg);
  
-@@ -597,10 +670,14 @@
- 	ret = 0;
- 
+@@ -591,13 +662,14 @@ skip_set_private_key:
+ 				goto out;
+ 		}
+ 	}
+-	ret = 0;
++	ret = wg_device_handle_post_config(wg->dev, asc);
+
  out:
-+	if (!ret)
-+		ret = wg_device_handle_post_config(wg->dev, asc);
-+
  	mutex_unlock(&wg->device_update_lock);
  	rtnl_unlock();
  	dev_put(wg->dev);
@@ -388,10 +393,11 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  	if (info->attrs[WGDEVICE_A_PRIVATE_KEY])
  		memzero_explicit(nla_data(info->attrs[WGDEVICE_A_PRIVATE_KEY]),
  				 nla_len(info->attrs[WGDEVICE_A_PRIVATE_KEY]));
-diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kconfig -x Makefile -x dkms.conf ../../linux-source-6.2.0/drivers/net/wireguard/noise.c ./noise.c
---- ../../linux-source-6.2.0/drivers/net/wireguard/noise.c	2023-11-10 18:10:29
-+++ ./noise.c	2023-11-23 18:58:26
-@@ -515,7 +515,7 @@
+diff --git noise.c noise.c
+index baf455e..9a4e8e0 100644
+--- noise.c
++++ noise.c
+@@ -484,7 +484,7 @@ static void tai64n_now(u8 output[NOISE_TIMESTAMP_LEN])
  
  bool
  wg_noise_handshake_create_initiation(struct message_handshake_initiation *dst,
@@ -400,7 +406,7 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  {
  	u8 timestamp[NOISE_TIMESTAMP_LEN];
  	u8 key[NOISE_SYMMETRIC_KEY_LEN];
-@@ -532,7 +532,7 @@
+@@ -501,7 +501,7 @@ wg_noise_handshake_create_initiation(struct message_handshake_initiation *dst,
  	if (unlikely(!handshake->static_identity->has_identity))
  		goto out;
  
@@ -409,7 +415,7 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  
  	handshake_init(handshake->chaining_key, handshake->hash,
  		       handshake->remote_static);
-@@ -665,7 +665,7 @@
+@@ -634,7 +634,7 @@ out:
  }
  
  bool wg_noise_handshake_create_response(struct message_handshake_response *dst,
@@ -418,7 +424,7 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  {
  	u8 key[NOISE_SYMMETRIC_KEY_LEN];
  	bool ret = false;
-@@ -681,7 +681,7 @@
+@@ -650,7 +650,7 @@ bool wg_noise_handshake_create_response(struct message_handshake_response *dst,
  	if (handshake->state != HANDSHAKE_CONSUMED_INITIATION)
  		goto out;
  
@@ -427,10 +433,11 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  	dst->receiver_index = handshake->remote_index;
  
  	/* e */
-diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kconfig -x Makefile -x dkms.conf ../../linux-source-6.2.0/drivers/net/wireguard/noise.h ./noise.h
---- ../../linux-source-6.2.0/drivers/net/wireguard/noise.h	2023-11-10 18:10:29
-+++ ./noise.h	2023-11-23 13:12:55
-@@ -118,13 +118,13 @@
+diff --git noise.h noise.h
+index c527253..300d9d4 100644
+--- noise.h
++++ noise.h
+@@ -118,13 +118,13 @@ void wg_noise_precompute_static_static(struct wg_peer *peer);
  
  bool
  wg_noise_handshake_create_initiation(struct message_handshake_initiation *dst,
@@ -446,10 +453,11 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  struct wg_peer *
  wg_noise_handshake_consume_response(struct message_handshake_response *src,
  				    struct wg_device *wg);
-diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kconfig -x Makefile -x dkms.conf ../../linux-source-6.2.0/drivers/net/wireguard/receive.c ./receive.c
---- ../../linux-source-6.2.0/drivers/net/wireguard/receive.c	2023-11-10 18:10:29
-+++ ./receive.c	2023-11-23 19:15:51
-@@ -25,25 +25,51 @@
+diff --git receive.c receive.c
+index 214889e..d6566e6 100644
+--- receive.c
++++ receive.c
+@@ -33,25 +33,51 @@ static void update_rx_stats(struct wg_peer *peer, size_t len)
  
  #define SKB_TYPE_LE32(skb) (((struct message_header *)(skb)->data)->type)
  
@@ -512,7 +520,7 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  static int prepare_skb_header(struct sk_buff *skb, struct wg_device *wg)
  {
  	size_t data_offset, data_len, header_len;
-@@ -79,7 +105,8 @@
+@@ -87,7 +113,8 @@ static int prepare_skb_header(struct sk_buff *skb, struct wg_device *wg)
  	if (unlikely(skb->len != data_len))
  		/* Final len does not agree with calculated len */
  		return -EINVAL;
@@ -522,7 +530,7 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  	if (unlikely(!header_len))
  		return -EINVAL;
  	__skb_push(skb, data_offset);
-@@ -101,7 +128,7 @@
+@@ -109,7 +136,7 @@ static void wg_receive_handshake_packet(struct wg_device *wg,
  	bool packet_needs_cookie;
  	bool under_load;
  
@@ -531,7 +539,7 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  		net_dbg_skb_ratelimited("%s: Receiving cookie response from %pISpfsc\n",
  					wg->dev->name, skb);
  		wg_cookie_message_consume(
-@@ -131,8 +158,7 @@
+@@ -139,8 +166,7 @@ static void wg_receive_handshake_packet(struct wg_device *wg,
  		return;
  	}
  
@@ -541,7 +549,7 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  		struct message_handshake_initiation *message =
  			(struct message_handshake_initiation *)skb->data;
  
-@@ -152,9 +178,8 @@
+@@ -160,9 +186,8 @@ static void wg_receive_handshake_packet(struct wg_device *wg,
  				    wg->dev->name, peer->internal_id,
  				    &peer->endpoint.addr);
  		wg_packet_send_handshake_response(peer);
@@ -552,17 +560,16 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  		struct message_handshake_response *message =
  			(struct message_handshake_response *)skb->data;
  
-@@ -185,9 +210,7 @@
+@@ -193,8 +218,6 @@ static void wg_receive_handshake_packet(struct wg_device *wg,
  			 */
  			wg_packet_send_keepalive(peer);
  		}
 -		break;
- 	}
 -	}
+ 	}
  
  	if (unlikely(!peer)) {
- 		WARN(1, "Somehow a wrong type of packet wound up in the handshake queue!\n");
-@@ -543,10 +566,10 @@
+@@ -559,10 +582,10 @@ void wg_packet_receive(struct wg_device *wg, struct sk_buff *skb)
  {
  	if (unlikely(prepare_skb_header(skb, wg) < 0))
  		goto err;
@@ -577,7 +584,7 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  		int cpu, ret = -EBUSY;
  
  		if (unlikely(!rng_is_initialized()))
-@@ -559,23 +582,20 @@
+@@ -575,23 +598,20 @@ void wg_packet_receive(struct wg_device *wg, struct sk_buff *skb)
  		} else
  			ret = ptr_ring_produce_bh(&wg->handshake_queue.ring, skb);
  		if (ret) {
@@ -606,10 +613,11 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  		WARN(1, "Non-exhaustive parsing of packet header lead to unknown packet type!\n");
  		goto err;
  	}
-diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kconfig -x Makefile -x dkms.conf ../../linux-source-6.2.0/drivers/net/wireguard/send.c ./send.c
---- ../../linux-source-6.2.0/drivers/net/wireguard/send.c	2023-11-10 18:10:29
-+++ ./send.c	2023-11-24 18:25:50
-@@ -14,13 +14,24 @@
+diff --git send.c send.c
+index 2b19344..c96d2a2 100644
+--- send.c
++++ send.c
+@@ -15,13 +15,24 @@
  #include <linux/uio.h>
  #include <linux/inetdevice.h>
  #include <linux/socket.h>
@@ -634,7 +642,7 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  
  	if (!wg_birthdate_has_expired(atomic64_read(&peer->last_sent_handshake),
  				      REKEY_TIMEOUT))
-@@ -31,14 +42,37 @@
+@@ -32,14 +43,37 @@ static void wg_packet_send_handshake_initiation(struct wg_peer *peer)
  			    peer->device->dev->name, peer->internal_id,
  			    &peer->endpoint.addr);
  
@@ -675,7 +683,7 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  		wg_timers_handshake_initiated(peer);
  	}
  }
-@@ -85,13 +119,14 @@
+@@ -86,13 +120,14 @@ out:
  void wg_packet_send_handshake_response(struct wg_peer *peer)
  {
  	struct message_handshake_response packet;
@@ -691,7 +699,7 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  		wg_cookie_add_mac_to_packet(&packet, sizeof(packet), peer);
  		if (wg_noise_handshake_begin_session(&peer->handshake,
  						     &peer->keypairs)) {
-@@ -100,9 +135,16 @@
+@@ -101,9 +136,16 @@ void wg_packet_send_handshake_response(struct wg_peer *peer)
  			wg_timers_any_authenticated_packet_sent(peer);
  			atomic64_set(&peer->last_sent_handshake,
  				     ktime_get_coarse_boottime_ns());
@@ -711,7 +719,7 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  		}
  	}
  }
-@@ -116,7 +158,7 @@
+@@ -117,7 +159,7 @@ void wg_packet_send_handshake_cookie(struct wg_device *wg,
  	net_dbg_skb_ratelimited("%s: Sending cookie response for denied handshake message for %pISpfsc\n",
  				wg->dev->name, initiating_skb);
  	wg_cookie_message_create(&packet, initiating_skb, sender_index,
@@ -720,16 +728,16 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  	wg_socket_send_buffer_as_reply_to_skb(wg, initiating_skb, &packet,
  					      sizeof(packet));
  }
-@@ -159,7 +201,7 @@
+@@ -160,7 +202,7 @@ static unsigned int calculate_skb_padding(struct sk_buff *skb)
  	return padded_size - last_unit;
  }
  
 -static bool encrypt_packet(struct sk_buff *skb, struct noise_keypair *keypair)
-+static bool encrypt_packet(struct sk_buff *skb, struct noise_keypair *keypair, u32 message_type)
++static bool encrypt_packet(u32 message_type, struct sk_buff *skb, struct noise_keypair *keypair)
  {
  	unsigned int padding_len, plaintext_len, trailer_len;
  	struct scatterlist sg[MAX_SKB_FRAGS + 8];
-@@ -203,7 +245,7 @@
+@@ -204,7 +246,7 @@ static bool encrypt_packet(struct sk_buff *skb, struct noise_keypair *keypair)
  	 */
  	skb_set_inner_network_header(skb, 0);
  	header = (struct message_data *)skb_push(skb, sizeof(*header));
@@ -738,29 +746,31 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  	header->key_idx = keypair->remote_index;
  	header->counter = cpu_to_le64(PACKET_CB(skb)->nonce);
  	pskb_put(skb, trailer, trailer_len);
-@@ -289,13 +331,17 @@
+@@ -291,6 +333,7 @@ void wg_packet_encrypt_worker(struct work_struct *work)
  	struct crypt_queue *queue = container_of(work, struct multicore_worker,
  						 work)->ptr;
  	struct sk_buff *first, *skb, *next;
 +	struct wg_device *wg;
+ 	simd_context_t simd_context;
  
- 	while ((first = ptr_ring_consume_bh(&queue->ring)) != NULL) {
+ 	simd_get(&simd_context);
+@@ -298,7 +341,10 @@ void wg_packet_encrypt_worker(struct work_struct *work)
  		enum packet_state state = PACKET_STATE_CRYPTED;
  
  		skb_list_walk_safe(first, skb, next) {
+-			if (likely(encrypt_packet(skb,
 +			wg = PACKET_PEER(first)->device;
 +
- 			if (likely(encrypt_packet(skb,
--					PACKET_CB(first)->keypair))) {
-+					PACKET_CB(first)->keypair,
-+					wg->advanced_security_config.transport_packet_magic_header))) {
++			if (likely(encrypt_packet(wg->advanced_security_config.transport_packet_magic_header,
++						  skb,
+ 						  PACKET_CB(first)->keypair,
+ 						  &simd_context))) {
  				wg_reset_packet(skb, true);
- 			} else {
- 				state = PACKET_STATE_DEAD;
-diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kconfig -x Makefile -x dkms.conf ../../linux-source-6.2.0/drivers/net/wireguard/socket.c ./socket.c
---- ../../linux-source-6.2.0/drivers/net/wireguard/socket.c	2023-11-10 18:10:29
-+++ ./socket.c	2023-11-23 15:45:07
-@@ -200,6 +200,18 @@
+diff --git socket.c socket.c
+index 9e0af93..2dd574f 100644
+--- socket.c
++++ socket.c
+@@ -200,6 +200,18 @@ int wg_socket_send_buffer_to_peer(struct wg_peer *peer, void *buffer,
  	return wg_socket_send_skb_to_peer(peer, skb, ds);
  }
  
@@ -779,10 +789,11 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  int wg_socket_send_buffer_as_reply_to_skb(struct wg_device *wg,
  					  struct sk_buff *in_skb, void *buffer,
  					  size_t len)
-diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kconfig -x Makefile -x dkms.conf ../../linux-source-6.2.0/drivers/net/wireguard/socket.h ./socket.h
---- ../../linux-source-6.2.0/drivers/net/wireguard/socket.h	2023-11-10 18:10:29
-+++ ./socket.h	2023-11-23 13:20:24
-@@ -16,6 +16,8 @@
+diff --git socket.h socket.h
+index bab5848..e4e3f96 100644
+--- socket.h
++++ socket.h
+@@ -16,6 +16,8 @@ void wg_socket_reinit(struct wg_device *wg, struct sock *new4,
  		      struct sock *new6);
  int wg_socket_send_buffer_to_peer(struct wg_peer *peer, void *data,
  				  size_t len, u8 ds);
@@ -791,8 +802,32 @@ diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kco
  int wg_socket_send_skb_to_peer(struct wg_peer *peer, struct sk_buff *skb,
  			       u8 ds);
  int wg_socket_send_buffer_as_reply_to_skb(struct wg_device *wg,
-diff --color -urN -x uapi -x compat -x crypto -x .idea -x tests -x Kbuild -x Kconfig -x Makefile -x dkms.conf ../../linux-source-6.2.0/drivers/net/wireguard/version.h ./version.h
---- ../../linux-source-6.2.0/drivers/net/wireguard/version.h	2023-11-10 18:10:29
-+++ ./version.h	1970-01-01 02:00:00
-@@ -1 +0,0 @@
--#define WIREGUARD_VERSION "1.0.0"
+diff --git uapi/wireguard.h uapi/wireguard.h
+index ae88be1..f6698e8 100644
+--- uapi/wireguard.h
++++ uapi/wireguard.h
+@@ -131,7 +131,7 @@
+ #ifndef _WG_UAPI_WIREGUARD_H
+ #define _WG_UAPI_WIREGUARD_H
+ 
+-#define WG_GENL_NAME "wireguard"
++#define WG_GENL_NAME "amneziawg"
+ #define WG_GENL_VERSION 1
+ 
+ #define WG_KEY_LEN 32
+@@ -157,6 +157,15 @@ enum wgdevice_attribute {
+ 	WGDEVICE_A_LISTEN_PORT,
+ 	WGDEVICE_A_FWMARK,
+ 	WGDEVICE_A_PEERS,
++	WGDEVICE_A_JC,
++	WGDEVICE_A_JMIN,
++	WGDEVICE_A_JMAX,
++	WGDEVICE_A_S1,
++	WGDEVICE_A_S2,
++	WGDEVICE_A_H1,
++	WGDEVICE_A_H2,
++	WGDEVICE_A_H3,
++	WGDEVICE_A_H4,
+ 	__WGDEVICE_A_LAST
+ };
+ #define WGDEVICE_A_MAX (__WGDEVICE_A_LAST - 1)

@@ -1,7 +1,7 @@
-WIREGUARD_VERSION = 1.0.0-awg
+# WIREGUARD_VERSION = 1.0.0-awg
 
 ccflags-y := -D'pr_fmt(fmt)=KBUILD_MODNAME ": " fmt'
-ccflags-y += -D'WIREGUARD_VERSION="$(WIREGUARD_VERSION)"'
+# ccflags-y += -D'WIREGUARD_VERSION="$(WIREGUARD_VERSION)"'
 # ccflags-y += -DDEBUG
 amneziawg-y := main.o
 amneziawg-y += noise.o

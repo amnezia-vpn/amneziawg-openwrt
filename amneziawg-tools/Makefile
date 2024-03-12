@@ -9,18 +9,18 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=amneziawg-tools
-PKG_VERSION:=0.0.1
+PKG_VERSION:=1.0.20240213
 PKG_RELEASE:=1
 
-PKG_SOURCE:=v$(PKG_VERSION)-kmod.tar.gz
-PKG_SOURCE_URL:=https://github.com/amnezia-vpn/amnezia-wg-tools/archive/refs/tags/
-PKG_HASH:=cc4f523f7ec171b7bb3bdd1bcf4ff2f6833364fab6cad309310a84f33eeafa9b
+PKG_SOURCE:=v$(PKG_VERSION).tar.gz
+PKG_SOURCE_URL:=https://github.com/amnezia-vpn/amneziawg-tools/archive/refs/tags/
+PKG_HASH:=4bde122630c9ddb1ec013c3e958f2c613b9eea56834674dda92fcb423c6f4d10
 
 PKG_MAINTAINER:=Amnezia Admin <admin@amnezia.org>
 PKG_LICENSE:=GPL-2.0
 PKG_LICENSE_FILES:=COPYING
 
-PKG_BUILD_DIR=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)-kmod
+PKG_BUILD_DIR=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -30,7 +30,7 @@ MAKE_VARS += PLATFORM=linux
 define Package/amneziawg-tools
   CATEGORY:=Network
   URL:=https://amnezia.org/
-  MAINTAINER:=Iurii Egorov <admin@amnezia.org>
+  MAINTAINER:=Amnezia Admin <admin@amnezia.org>
   TITLE:=AmneziaWG userspace control program (amneziawg)
   DEPENDS:= \
 	  +@BUSYBOX_CONFIG_IP \
@@ -47,7 +47,7 @@ endef
 
 define Package/amneziawg-tools/install
 	$(INSTALL_DIR) $(1)/usr/bin/
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/wg $(1)/usr/bin/amneziawg
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/wg $(1)/usr/bin/awg
 	$(INSTALL_BIN) ./files/amneziawg_watchdog $(1)/usr/bin/
 	$(INSTALL_DIR) $(1)/lib/netifd/proto/
 	$(INSTALL_BIN) ./files/amneziawg.sh $(1)/lib/netifd/proto/

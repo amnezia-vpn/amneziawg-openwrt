@@ -12,8 +12,8 @@ define KernelPackage/amneziawg
 	SECTION:=kernel
 	CATEGORY:=Kernel Modules
 	SUBMENU:=Network Support
-  URL:=https://amnezia.org/
-  MAINTAINER:=Amnezia Admin <admin@amnezia.org>
+	URL:=https://amnezia.org/
+	MAINTAINER:=Amnezia Admin <admin@amnezia.org>
 	TITLE:=AmneziaWG Kernel Module
 	FILES:=$(PKG_BUILD_DIR)/amneziawg.ko
 	DEPENDS:= \
@@ -27,8 +27,9 @@ define Build/Prepare
 	cp -fr $(LINUX_DIR)/drivers/net/wireguard/{*.c,*.h,selftest/} $(PKG_BUILD_DIR)
 	mkdir -p $(PKG_BUILD_DIR)/uapi
 	cp -f $(LINUX_DIR)/include/uapi/linux/wireguard.h $(PKG_BUILD_DIR)/uapi/
-	patch -d $(PKG_BUILD_DIR)/ < files/amnezia-sources.patch
-	patch -d $(PKG_BUILD_DIR)/uapi/ < files/amnezia-uapi.patch
+	for patch in `ls files/*`; do \
+		patch -d $(PKG_BUILD_DIR)/ -F3 -t -p0 -i "$$$$(pwd)/$$$${patch}"; \
+	done
 	cp -f src/Makefile $(PKG_BUILD_DIR)
 endef
 
