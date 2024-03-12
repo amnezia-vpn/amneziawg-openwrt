@@ -19,14 +19,14 @@ function command(cmd) {
 const methods = {
 	generatePsk: {
 		call: function() {
-			return { psk: command('amneziawg genpsk 2>/dev/null') };
+			return { psk: command('awg genpsk 2>/dev/null') };
 		}
 	},
 
 	generateKeyPair: {
 		call: function() {
-			const priv = command('amneziawg genkey 2>/dev/null');
-			const pub = command(`echo ${shellquote(priv)} | amneziawg pubkey 2>/dev/null`);
+			const priv = command('awg genkey 2>/dev/null');
+			const pub = command(`echo ${shellquote(priv)} | awg pubkey 2>/dev/null`);
 
 			return { keys: { priv, pub } };
 		}
@@ -36,7 +36,7 @@ const methods = {
 		args: { privkey: "privkey" },
 		call: function(req) {
 			const priv = req.args?.privkey;
-			const pub = command(`echo ${shellquote(priv)} | amneziawg pubkey 2>/dev/null`);
+			const pub = command(`echo ${shellquote(priv)} | awg pubkey 2>/dev/null`);
 
 			return { keys: { priv, pub } };
 		}
@@ -49,7 +49,7 @@ const methods = {
 			let qr_pubkey = {};
 
 			const uci = cursor();
-			const wg_dump = popen("amneziawg show all dump 2>/dev/null");
+			const wg_dump = popen("awg show all dump 2>/dev/null");
 
 			if (wg_dump) {
 				uci.load("network");

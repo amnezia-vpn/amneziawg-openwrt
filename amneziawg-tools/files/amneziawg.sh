@@ -4,9 +4,9 @@
 
 # shellcheck disable=SC1091,SC3003,SC3043
 
-WG=/usr/bin/amneziawg
+WG=/usr/bin/awg
 if [ ! -x $WG ]; then
-	logger -t "amnezia-wg" "error: missing amnezia-wg-tools (${WG})"
+	logger -t "amneziawg" "error: missing amneziawg-tools (${WG})"
 	exit 0
 fi
 
@@ -309,7 +309,7 @@ proto_amneziawg_teardown() {
 	if proto_amneziawg_is_kernel_mode; then
 		ip link del dev "${config}" >/dev/null 2>&1
 	else
-		rm -f "/var/run/wireguard/${config}.sock"
+		rm -f "/var/run/amneziawg/${config}.sock"
 	fi
 }
 
