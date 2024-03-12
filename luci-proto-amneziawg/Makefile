@@ -13,7 +13,7 @@ LUCI_DESCRIPTION:=Provides Web UI for AmneziaWG
 LUCI_DEPENDS:=+luci-base +amneziawg-tools +ucode
 LUCI_PKGARCH:=all
 
-PKG_PROVIDES:=luci-app-amneziawg
+PKG_PROVIDES:=luci-proto-amneziawg
 
 include $(TOPDIR)/feeds/luci/luci.mk
 
