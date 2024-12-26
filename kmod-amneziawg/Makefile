@@ -10,7 +10,7 @@ include $(INCLUDE_DIR)/package.mk
 
 define KernelPackage/amneziawg
 	SECTION:=kernel
-	CATEGORY:=Kernel Modules
+	CATEGORY:=Kernel modules
 	SUBMENU:=Network Support
 	URL:=https://amnezia.org/
 	MAINTAINER:=Amnezia Admin <admin@amnezia.org>
