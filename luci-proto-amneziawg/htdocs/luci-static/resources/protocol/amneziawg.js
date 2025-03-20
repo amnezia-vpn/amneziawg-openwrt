@@ -597,31 +597,31 @@ return network.registerProtocol("amneziawg", {
 							.setValue(config.interface_address);
 						s.getOption("awg_jc")
 							.getUIElement(s.section)
-							.setValue(config.awg_jc);
+							.setValue(config.interface_jc);
 						s.getOption("awg_jmin")
 							.getUIElement(s.section)
-							.setValue(config.awg_jmin);
+							.setValue(config.interface_jmin);
 						s.getOption("awg_jmax")
 							.getUIElement(s.section)
-							.setValue(config.awg_jmax);
+							.setValue(config.interface_jmax);
 						s.getOption("awg_s1")
 							.getUIElement(s.section)
-							.setValue(config.awg_s1);
+							.setValue(config.interface_s1);
 						s.getOption("awg_s2")
 							.getUIElement(s.section)
-							.setValue(config.awg_s2);
+							.setValue(config.interface_s2);
 						s.getOption("awg_h1")
 							.getUIElement(s.section)
-							.setValue(config.awg_h1);
+							.setValue(config.interface_h1);
 						s.getOption("awg_h2")
 							.getUIElement(s.section)
-							.setValue(config.awg_h2);
+							.setValue(config.interface_h2);
 						s.getOption("awg_h3")
 							.getUIElement(s.section)
-							.setValue(config.awg_h3);
+							.setValue(config.interface_h3);
 						s.getOption("awg_h4")
 							.getUIElement(s.section)
-							.setValue(config.awg_h4);
+							.setValue(config.interface_h4);
 
 						if (config.interface_dns)
 							s.getOption("dns")
