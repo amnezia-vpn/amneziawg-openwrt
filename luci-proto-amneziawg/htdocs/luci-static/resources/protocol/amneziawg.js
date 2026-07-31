@@ -363,11 +363,31 @@ return network.registerProtocol("amneziawg", {
 		o = s.taboption(
 			"amneziawg",
 			form.Value,
+			"awg_s3",
+			_("S3"),
+			_("Cookie reply packet junk header size.")
+		);
+		o.datatype = "uinteger";
+		o.optional = true;
+
+		o = s.taboption(
+			"amneziawg",
+			form.Value,
+			"awg_s4",
+			_("S4"),
+			_("Transport packet junk header size.")
+		);
+		o.datatype = "uinteger";
+		o.optional = true;
+
+		o = s.taboption(
+			"amneziawg",
+			form.Value,
 			"awg_h1",
 			_("H1"),
 			_("Handshake initiation packet type header.")
 		);
-		o.datatype = "uinteger";
+		o.datatype = "string";
 		o.optional = true;
 
 		o = s.taboption(
@@ -377,7 +397,7 @@ return network.registerProtocol("amneziawg", {
 			_("H2"),
 			_("Handshake response packet type header.")
 		);
-		o.datatype = "uinteger";
+		o.datatype = "string";
 		o.optional = true;
 
 		o = s.taboption(
@@ -387,7 +407,7 @@ return network.registerProtocol("amneziawg", {
 			_("H3"),
 			_("Handshake cookie packet type header.")
 		);
-		o.datatype = "uinteger";
+		o.datatype = "string";
 		o.optional = true;
 
 		o = s.taboption(
@@ -397,7 +417,57 @@ return network.registerProtocol("amneziawg", {
 			_("H4"),
 			_("Transport packet type header.")
 		);
-		o.datatype = "uinteger";
+		o.datatype = "string";
+		o.optional = true;
+
+		o = s.taboption(
+			"amneziawg",
+			form.Value,
+			"awg_i1",
+			_("I1"),
+			_("First special junk packet signature.")
+		);
+		o.datatype = "string";
+		o.optional = true;
+
+		o = s.taboption(
+			"amneziawg",
+			form.Value,
+			"awg_i2",
+			_("I2"),
+			_("Second special junk packet signature.")
+		);
+		o.datatype = "string";
+		o.optional = true;
+
+		o = s.taboption(
+			"amneziawg",
+			form.Value,
+			"awg_i3",
+			_("I3"),
+			_("Third special junk packet signature.")
+		);
+		o.datatype = "string";
+		o.optional = true;
+
+		o = s.taboption(
+			"amneziawg",
+			form.Value,
+			"awg_i4",
+			_("I4"),
+			_("Fourth special junk packet signature.")
+		);
+		o.datatype = "string";
+		o.optional = true;
+
+		o = s.taboption(
+			"amneziawg",
+			form.Value,
+			"awg_i5",
+			_("I5"),
+			_("Fifth special junk packet signature.")
+		);
+		o.datatype = "string";
 		o.optional = true;
 
 		// -- peers -----------------------------------------------------------------------
@@ -597,31 +667,41 @@ return network.registerProtocol("amneziawg", {
 							.setValue(config.interface_address);
 						s.getOption("awg_jc")
 							.getUIElement(s.section)
-							.setValue(config.awg_jc);
+							.setValue(config.interface_jc || "");
 						s.getOption("awg_jmin")
 							.getUIElement(s.section)
-							.setValue(config.awg_jmin);
+							.setValue(config.interface_jmin || "");
 						s.getOption("awg_jmax")
 							.getUIElement(s.section)
-							.setValue(config.awg_jmax);
+							.setValue(config.interface_jmax || "");
 						s.getOption("awg_s1")
 							.getUIElement(s.section)
-							.setValue(config.awg_s1);
+							.setValue(config.interface_s1 || "");
 						s.getOption("awg_s2")
 							.getUIElement(s.section)
-							.setValue(config.awg_s2);
+							.setValue(config.interface_s2 || "");
+						s.getOption("awg_s3")
+							.getUIElement(s.section)
+							.setValue(config.interface_s3 || "");
+						s.getOption("awg_s4")
+							.getUIElement(s.section)
+							.setValue(config.interface_s4 || "");
 						s.getOption("awg_h1")
 							.getUIElement(s.section)
-							.setValue(config.awg_h1);
+							.setValue(config.interface_h1 || "");
 						s.getOption("awg_h2")
 							.getUIElement(s.section)
-							.setValue(config.awg_h2);
+							.setValue(config.interface_h2 || "");
 						s.getOption("awg_h3")
 							.getUIElement(s.section)
-							.setValue(config.awg_h3);
+							.setValue(config.interface_h3 || "");
 						s.getOption("awg_h4")
 							.getUIElement(s.section)
-							.setValue(config.awg_h4);
+							.setValue(config.interface_h4 || "");
+						for (var i = 1; i <= 5; i++)
+							s.getOption("awg_i" + i)
+								.getUIElement(s.section)
+								.setValue(config["interface_i" + i] || "");
 
 						if (config.interface_dns)
 							s.getOption("dns")
@@ -1203,11 +1283,26 @@ return network.registerProtocol("amneziawg", {
 		o.createPeerConfig = function (section_id, endpoint, ips) {
 			var pub = s.formvalue(s.section, "public_key"),
 				port = s.formvalue(s.section, "listen_port") || "51820",
-				jc = s.formvalue;
-			(prv = this.section.formvalue(section_id, "private_key")),
-				(psk = this.section.formvalue(section_id, "preshared_key")),
-				(eport = this.section.formvalue(section_id, "endpoint_port")),
-				(keep = this.section.formvalue(section_id, "persistent_keepalive"));
+				jc = s.formvalue(s.section, "awg_jc"),
+				jmin = s.formvalue(s.section, "awg_jmin"),
+				jmax = s.formvalue(s.section, "awg_jmax"),
+				s1 = s.formvalue(s.section, "awg_s1"),
+				s2 = s.formvalue(s.section, "awg_s2"),
+				s3 = s.formvalue(s.section, "awg_s3"),
+				s4 = s.formvalue(s.section, "awg_s4"),
+				h1 = s.formvalue(s.section, "awg_h1"),
+				h2 = s.formvalue(s.section, "awg_h2"),
+				h3 = s.formvalue(s.section, "awg_h3"),
+				h4 = s.formvalue(s.section, "awg_h4"),
+				i1 = s.formvalue(s.section, "awg_i1"),
+				i2 = s.formvalue(s.section, "awg_i2"),
+				i3 = s.formvalue(s.section, "awg_i3"),
+				i4 = s.formvalue(s.section, "awg_i4"),
+				i5 = s.formvalue(s.section, "awg_i5"),
+				prv = this.section.formvalue(section_id, "private_key"),
+				psk = this.section.formvalue(section_id, "preshared_key"),
+				eport = this.section.formvalue(section_id, "endpoint_port"),
+				keep = this.section.formvalue(section_id, "persistent_keepalive");
 
 			// If endpoint is IPv6 we must escape it with []
 			if (endpoint.indexOf(":") > 0) {
@@ -1218,6 +1313,22 @@ return network.registerProtocol("amneziawg", {
 				"[Interface]",
 				"PrivateKey = " + prv,
 				eport ? "ListenPort = " + eport : "# ListenPort not defined",
+				jc ? "Jc = " + jc : "# Jc not defined",
+				jmin ? "Jmin = " + jmin : "# Jmin not defined",
+				jmax ? "Jmax = " + jmax : "# Jmax not defined",
+				s1 ? "S1 = " + s1 : "# S1 not defined",
+				s2 ? "S2 = " + s2 : "# S2 not defined",
+				s3 ? "S3 = " + s3 : "# S3 not defined",
+				s4 ? "S4 = " + s4 : "# S4 not defined",
+				h1 ? "H1 = " + h1 : "# H1 not defined",
+				h2 ? "H2 = " + h2 : "# H2 not defined",
+				h3 ? "H3 = " + h3 : "# H3 not defined",
+				h4 ? "H4 = " + h4 : "# H4 not defined",
+				i1 ? "I1 = " + i1 : "# I1 not defined",
+				i2 ? "I2 = " + i2 : "# I2 not defined",
+				i3 ? "I3 = " + i3 : "# I3 not defined",
+				i4 ? "I4 = " + i4 : "# I4 not defined",
+				i5 ? "I5 = " + i5 : "# I5 not defined",
 				"",
 				"[Peer]",
 				"PublicKey = " + pub,
